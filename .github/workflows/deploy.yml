@@ -19,13 +19,13 @@ jobs:
       - name: Validate template
         run: |
           az deployment group validate \
-            --resource-group sentinelrg \
-            --template-file detections/1.json
-            --parameters workspace=lawSentinel
+          --resource-group sentinelrg \
+          --template-file detections/1.json \
+          --parameters workspace=lawSentinel
 
       - name: Deploy detection
         run: |
           az deployment group create \
-            --resource-group sentinelrg \
-            --template-file detections/1.json
-            --parameters workspace=lawSentinel
+          --resource-group sentinelrg \
+          --template-file detections/1.json \
+          --parameters workspace=lawSentinel
