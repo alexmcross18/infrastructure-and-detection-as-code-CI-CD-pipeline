@@ -1,22 +1,23 @@
+name: Deploy Sentinel Detection
+
 on:
   workflow_dispatch:
 
-name: Run Azure Login With a Service Principal Secret
-
 jobs:
-
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-    - uses: azure/login@v3
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-        enable-AzPSSession: true
+      - name: Login to Azure
+        uses: azure/login@v3
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Azure PowerShell script
-      uses: azure/powershell@v3
-      with:
-        azPSVersion: "latest"
-        inlineScript: |
-          Get-AzWebApp
+      - name: Deploy detection
+        run: |
+          az deployment group create \
+            --resource-group <sentinelrg> \
+            --template-file detections/1.json
