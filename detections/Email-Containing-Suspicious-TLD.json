@@ -9,8 +9,8 @@
     "resources": [
 
         {
-            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/, guid(parameters('workspace'), 'Suspicious-TLD'))]",
-            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/, guid(parameters('workspace'), 'Suspicious-TLD'))]",
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/', guid(parameters('workspace'), 'Suspicious-TLD'))]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/', guid(parameters('workspace'), 'Suspicious-TLD'))]",
             "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
             "kind": "Scheduled",
             "apiVersion": "2023-12-01-preview",
