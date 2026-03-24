@@ -8,8 +8,8 @@
     },
     "resources": [
         {
-            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/9c0a8f85-8c36-455e-8152-a4aae72b2d5b')]",
-            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/9c0a8f85-8c36-455e-8152-a4aae72b2d5b')]",
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/9c0a8f85-8c36-455e-8152-a4aae72b2d5b')]", guid(parameters('workspace'), 'Unathorised-Web-Browsers'))]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/9c0a8f85-8c36-455e-8152-a4aae72b2d5b')]", guid(parameters('workspace'), 'Unathorised-Web-Browsers'))]",
             "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
             "kind": "Scheduled",
             "apiVersion": "2023-12-01-preview",
