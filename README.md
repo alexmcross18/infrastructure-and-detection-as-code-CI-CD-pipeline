@@ -24,6 +24,7 @@ ARM templates of Sentinel analytics. Currently contains the following detections
 2. The GitHub Actions workflow is manually triggered via workflow_dispatch (this can be changed to trigger when a push to the main branch is done).
 3. The workflow authenticates to Azure and deploys the ARM template to the target Sentinel workspace.
 4. The rule is live in Sentinel without any manual intervention.
+- If a .json file is created or modified in the /detections folder, that .json file gets validated but doesn't get pushed into the pipeline.
 
 ## Goals
 
