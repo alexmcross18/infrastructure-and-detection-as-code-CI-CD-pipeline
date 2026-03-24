@@ -44,7 +44,7 @@ ARM templates of Sentinel analytics. Currently contains the following detections
 
 - Deploying an Analytic with a previously deleted Analytic's ID.
 
-This was due to my exporting an Analytic from Sentinel and deleting it. I then tried to run the worflow with the ARM template writing the Analytic with the same ID the recently deleted one had, too soon after deleting it.
+This was due to my exporting an Analytic from Sentinel and deleting it. I then tried to run the workflow with the ARM template writing the Analytic with the same ID the recently deleted one had, too soon after deleting it.
 
 It probably would've worked if I had wait longer for Azure to forget about the previous ID, however, I changed the template to use ```guid(parameters('workspace'), 'test-rule')``` which uses the workspace name and a unique string ("test-rule") as inputs, which are hashed to produce a stable GUID.
 
