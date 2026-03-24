@@ -10,7 +10,7 @@ jobs:
 
     - uses: azure/login@v3
       with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        creds: ${{ secrets.GITHUB }}
         enable-AzPSSession: true
 
     - name: Azure PowerShell script
