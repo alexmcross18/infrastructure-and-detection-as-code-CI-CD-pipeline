@@ -1,0 +1,59 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/, guid(parameters('workspace'), 'Suspicious-TLD'))]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/, guid(parameters('workspace'), 'Suspicious-TLD'))]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2023-12-01-preview",
+            "properties": {
+                "displayName": "Email containing suspicious TLD",
+                "description": "Top Level Domain",
+                "severity": "Medium",
+                "enabled": true,
+                "query": "// Creates a list of known/legit senders that may do this.\r\nlet knownSenders = dynamic([\r\n\"knownSender1@domain.com\",\r\n\"knownSender2@domain.com\",\r\n\"knownSender3@domain.com\"\r\n]);\r\n// Creates a list of abusable TLDs.\r\nlet suspiciousTLDs = dynamic([\r\n    \".zip\", \".mov\", \".cfd\", \".quest\", \".cam\", \".fin\", \".llc\", \".vip\", \".gq\", \".tk\"\r\n]);\r\n// Searches the EmailUrlInfo table for emails that contain domains that end in one of the suspiciousTLDs.\r\nEmailUrlInfo\r\n| where UrlDomain has_any (suspiciousTLDs)\r\n// Enriches the filtered EmailUrlInfo results with email metadata from EmailEvents, joined on the NetworkMessageId.\r\n| join kind=leftouter EmailEvents on NetworkMessageId\r\n// Enrich results with click data from UrlClickEvents to determine if and when a recipient clicked the suspicious URL on NetworkMessageId.\r\n| join kind=leftouter (\r\n    UrlClickEvents\r\n    | project NetworkMessageId, TimeGenerated, ClickAction=ActionType, ClickUser=AccountUpn, IsClickedThrough, ThreatTypes, ClickIP=IPAddress\r\n) on NetworkMessageId\r\n// Excludes known senders.\r\n| where SenderFromAddress !in (knownSenders)\r\n// Only delivered mail.\r\n| where DeliveryAction == \"Delivered\"\r\n// Removes duplicates from on-prem Exchange server.\r\n| where DeliveryLocation != \"On-premises/external\"\r\n// Parses SPF, DKIM and DMARC into their own rows to make them easier to see.\r\n| extend SPF = split(AuthenticationDetails, ',')[0],\r\n         DKIM = split(AuthenticationDetails, ',')[1],\r\n         DMARC = split(AuthenticationDetails, ',')[2]\r\n// Count how many recipients got the same message.\r\n| join kind=leftouter (\r\n    EmailEvents\r\n    | summarize RecipientCount = dcount(RecipientEmailAddress) by NetworkMessageId\r\n) on NetworkMessageId\r\n// Final output\r\n| project TimeGenerated, Subject, Url, UrlDomain, UrlLocation, SenderFromAddress, RecipientEmailAddress, RecipientCount,  SenderIPv4,  DeliveryLocation, ClickAction,  SPF, DKIM, DMARC\r\n| order by TimeGenerated desc ",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT6M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "startTimeUtc": null,
+                "tactics": [
+                    "InitialAccess"
+                ],
+                "techniques": [],
+                "subTechniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": false,
+                        "reopenClosedIncident": false,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "AllEntities",
+                        "groupByEntities": [],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": null,
+                "sentinelEntitiesMappings": null,
+                "templateVersion": null
+            }
+        }
+    ]
+}
