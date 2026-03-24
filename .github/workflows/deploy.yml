@@ -37,7 +37,7 @@ jobs:
             --parameters workspace=${{ vars.AZURE_WORKSPACE }}
           done
 
-# Deploys the detection.
+# Deploys the detection, only if I action the workflow.
       - name: Deploy detection
         if: github.event_name == 'workflow_dispatch'
         run: |
