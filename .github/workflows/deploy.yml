@@ -19,5 +19,6 @@ jobs:
       - name: Deploy detection
         run: |
           az deployment group create \
-            --resource-group <sentinelrg> \
+            --resource-group sentinelrg \
             --template-file detections/1.json
+            --parameters workspace=lawSentinel
