@@ -1,5 +1,4 @@
 {
-  "mode": "All",
   "properties": {
     "displayName": "Azure Blob Storage Account Open To The Public",
     "policyType": "Custom",
