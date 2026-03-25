@@ -8,13 +8,13 @@
     },
     "resources": [
         {
-            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/f5f28eec-ccf7-4e08-844f-c800d1d15689')]",
-            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/f5f28eec-ccf7-4e08-844f-c800d1d15689')]",
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/', guid(parameters('workspace'), 'Sign-In-Unusual-Location'))]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/', guid(parameters('workspace'), 'Sign-In-Unusual-Location'))]",
             "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
             "kind": "Scheduled",
             "apiVersion": "2023-12-01-preview",
             "properties": {
-                "displayName": "locations",
+                "displayName": "Sign In from an Unusual Location",
                 "description": "",
                 "severity": "Medium",
                 "enabled": true,
