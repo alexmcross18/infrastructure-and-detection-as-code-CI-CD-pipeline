@@ -1,1 +1,50 @@
+# Name of the workflow.
+name: Deploy Azure Policy
 
+# Set to run only when a .json file is created or modified in the detections folder.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'infrastructure/Azure-Policy-as-Code/**.json'
+
+# Runs on a Ubuntu VM.
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+# Gives the VM the ability to see my repo and the files in it.
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+# Logs into Azure using the Secret "AZURE_CREDENTIALS" stored in this repo's settings.
+      - name: Login to Azure
+        uses: azure/login@v3
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+# Validates that the resource group and workspace is there and validates that there aren't any issues with the json file.
+      - name: Validate template
+        run: |
+          for file in infrastructure/Azure-Policy-as-Code/*.json; do
+            echo "Validating $file"
+            az deployment sub validate \
+            --location uksouth \
+            --template-file "$file" \
+            --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          done
+
+# Deploys the detection, only if I action the workflow.
+      - name: Deploy detection
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          for file in infrastructure/Azure-Policy-as-Code/*.json; do
+            echo "Deploying $file"
+            az deployment sub create \
+            --location uksouth \
+            --template-file "$file" \
+            --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          done
