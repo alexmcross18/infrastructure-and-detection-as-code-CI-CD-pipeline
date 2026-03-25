@@ -18,7 +18,7 @@ jobs:
 # Gives the VM the ability to see my repo and the files in it.
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
 # Logs into Azure using the Secret "AZURE_CREDENTIALS" stored in this repo's settings.
       - name: Login to Azure
