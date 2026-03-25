@@ -85,7 +85,7 @@
                         ]
                     },
                     "then": {
-                        "effect": "[parameters('effect')]"
+                        "effect": "[[parameters('effect')]"
                     }
                 }
             }
