@@ -1,49 +1,51 @@
-"properties": {
-  "displayName": "Azure Blob Storage Account Open To The Public",
-  "policyType": "Custom",
-  "metadata": {
-    "category": "Storage",
-    "version": "1.0.0"
-  },
-  "description": "Denies the creation or update of storage accounts where allowBlobPublicAccess is enabled or not explicitly set to false. Public blob access allows unauthenticated read access to container contents and is a common cause of data exposure incidents.",
-  "parameters": {
-    "effect": {
-      "type": "string",
-      "metadata": {
-        "displayName": "Effect",
-        "description": "Audit logs a warning but allows the deployment. Deny blocks it outright. Disabled turns the policy off."
-      },
-      "allowedValues": [
-        "Audit",
-        "Deny",
-        "Disabled"
-      ],
-      "defaultValue": "Audit"
-    }
-  },
-  "policyRule": {
-    "if": {
-      "allOf": [
-        {
-          "field": "type",
-          "equals": "Microsoft.Storage/storageAccounts"
-        },
-        {
-          "anyOf": [
-            {
-              "field": "Microsoft.Storage/storageAccounts/allowBlobPublicAccess",
-              "equals": "true"
-            },
-            {
-              "field": "Microsoft.Storage/storageAccounts/allowBlobPublicAccess",
-              "exists": "false"
-            }
-          ]
-        }
-      ]
+{
+  "properties": {
+    "displayName": "Azure Blob Storage Account Open To The Public",
+    "policyType": "Custom",
+    "metadata": {
+      "category": "Storage",
+      "version": "1.0.0"
     },
-    "then": {
-      "effect": "[parameters('effect')]"
+    "description": "Denies the creation or update of storage accounts where allowBlobPublicAccess is enabled or not explicitly set to false. Public blob access allows unauthenticated read access to container contents and is a common cause of data exposure incidents.",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Audit logs a warning but allows the deployment. Deny blocks it outright. Disabled turns the policy off."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Storage/storageAccounts"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "Microsoft.Storage/storageAccounts/allowBlobPublicAccess",
+                "equals": "true"
+              },
+              {
+                "field": "Microsoft.Storage/storageAccounts/allowBlobPublicAccess",
+                "exists": "false"
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
     }
   }
 }
