@@ -34,7 +34,7 @@ jobs:
             az deployment sub validate \
             --location uksouth \
             --template-file "$file" \
-            --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+            --subscription ${{ env.AZURE_SUBSCRIPTION_ID }}
           done
 
 # Deploys the detection, only if I action the workflow.
@@ -46,5 +46,5 @@ jobs:
             az deployment sub create \
             --location uksouth \
             --template-file "$file" \
-            --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+            --subscription ${{ env.AZURE_SUBSCRIPTION_ID }}
           done
