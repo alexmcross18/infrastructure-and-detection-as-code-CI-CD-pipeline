@@ -20,7 +20,6 @@ jobs:
         uses: azure/login@v3
         with:
           creds: ${{ secrets.AZURE_SP_CREDENTIALS }}
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
           allow-no-subscriptions: true
 
       - name: Deploy Logs
