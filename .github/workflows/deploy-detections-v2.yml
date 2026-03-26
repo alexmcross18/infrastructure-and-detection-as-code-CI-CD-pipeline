@@ -1,0 +1,32 @@
+name: Deploy Detection/Analytics to Sentinel
+on: 
+    workflow_dispatch:
+        inputs:
+            client:
+                description: 'Client to deploy to (must match GitHub Environment name)'
+                required: true
+                type: string
+
+jobs:
+    deploy:
+      runs-on: ubuntu-latest
+      environment: ${{ inputs.client }}
+      steps:
+          - name: Checkout Repo
+            uses: actions/checkout@v4
+            
+          - name: Login to Azure
+            uses: azure/login@v3
+            with:
+                creds: ${{ secrets.AZURE_SP_CREDENTIALS }}
+
+          - name: Deploy detection
+            if: github.event_name == 'workflow_dispatch'
+            run: |
+              for file in detections/*.json; do
+                echo "Deploying $file"
+                az deployment group create \
+                --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
+                --template-file "$file" \
+                --parameters workspace=${{ vars.AZURE_WORKSPACE }}
+              done
