@@ -1,4 +1,4 @@
-using 'infrastructure/Log-Analytics-Workspace-Sentinel/Log-Analytics-Workspace.bicep'
+using '../Log-Analytics-Workspace.bicep'
 
 param logAnalyticsWorkspaceName = 'law-client-a'
 param retentionDays = 90
