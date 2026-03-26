@@ -1,15 +1,15 @@
-@description('Asks the user to enter a name they want the Log Analytics Workspace to be called')
+@description('Name of the Log Analytics Workspace.')
 param logAnalyticsWorkspaceName string
 
-@description('Sets the location/region for the resources from the resource group they are in.')
+@description('Location/region inherited from the resource group.')
 param location string = resourceGroup().location
 
-@description('Asks the user to enter the length of time they want the logs to be retained for.')
+@description('Number of days to retain logs. Between 30 and 730.')
 @minValue(30)
 @maxValue(730)
 param retentionDays int
 
-@description('Asks the user to enter the SKU for the Log Analytics Workspace.')
+@description('SKU for the Log Analytics Workspace.')
 @allowed([
   'PerGB2018'
   'PerNode'
