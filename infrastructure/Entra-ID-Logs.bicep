@@ -1,8 +1,7 @@
-
-targetScope = 'tenant'
+//targetScope = 'tenant'
 
 // Below is setting the Log Analytics Workspace's resourceId.
-param lawResourceId string = '/subscriptions/your-subscription-id/resourceGroups/your-resource-group-name/providers/Microsoft.OperationalInsights/workspaces/lawSentinel'
+// param lawResourceId string = '/subscriptions/your-subscription-id/resourceGroups/your-resource-group-name/providers/Microsoft.OperationalInsights/workspaces/lawSentinel'
 
 // Below is enabling all of the logs in diagnostic setting.
 param enableSignInLogs bool = true
