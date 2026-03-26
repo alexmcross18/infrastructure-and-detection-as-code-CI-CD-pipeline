@@ -1,1 +1,31 @@
+name: Deploy Entra ID Logs
 
+on:
+  workflow_dispatch:
+    inputs:
+      client:
+        description: 'Client to deploy to (must match GitHub Environment name)'
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.client }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v3
+        with:
+          creds: ${{ secrets.AZURE_SP_CREDENTIALS }}
+          allow-no-subscriptions: true
+
+      - name: Deploy Logs
+        run: |
+          az deployment tenant create \
+          --template-file infrastructure/logs/Entra-ID-Logs.bicep \
+          --location ${{ vars.AZURE_LOCATION }} \
+          --tenant ${{ vars.AZURE_TENANT_ID }} \
+          --parameters lawResourceId=${{ vars.LAW_RESOURCE_ID }}
