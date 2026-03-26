@@ -1,7 +1,7 @@
 # Name of the workflow.
 name: Deploy Azure Policy
 
-# Set to run only when a .json file is created or modified in the detections folder.
+# Set to run only when a .json file is created or modified in the Policy folder.
 on:
   workflow_dispatch:
   push:
@@ -37,7 +37,7 @@ jobs:
             --subscription ${{ vars.AZURE_SUBSCRIPTION_ID }}
           done
 
-# Deploys the detection, only if I action the workflow.
+# Deploys the Policy, only if I action the workflow.
       - name: Deploy detection
         if: github.event_name == 'workflow_dispatch'
         run: |
