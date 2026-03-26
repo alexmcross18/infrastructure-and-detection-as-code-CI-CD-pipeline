@@ -45,17 +45,18 @@ This approach brings software engineering discipline to security operations — 
 
 ## GitHub Actions Workflows
 
-All three workflows are triggered manually via `workflow_dispatch` and accept a `client` input that maps to a GitHub Environment. Each environment holds its own secrets and variables (Azure credentials, resource group name, workspace name, etc.), which allows the same workflow to deploy to multiple tenants without code changes.
+All three workflows are triggered manually via `workflow_dispatch` and accept a `client` input that maps to a GitHub Environment. Each environment holds its own secrets and variables (Azure credentials, resource group name, workspace name, etc.), which allows the same workflow to deploy to multiple tenants without code changes, perfect for a multi-client operation.
 
 ### `deploy-detections.yml` — Deploy Sentinel Analytics Rules
 
 Iterates over every `.json` file in the `/detections` folder and deploys each one as a Sentinel Scheduled Analytics Rule into the target workspace.
 
 **Steps:**
-1. Checks out the repository
-2. Authenticates to Azure using a Service Principal stored in `AZURE_SP_CREDENTIALS`
-3. Validates each ARM template against the target resource group (`az deployment group validate`)
-4. Deploys each template using `az deployment group create`
+1. Asks user to choose a client/environment
+2. Checks out the repository
+3. Authenticates to Azure using a Service Principal stored in `AZURE_SP_CREDENTIALS`
+4. Validates each ARM template against the target resource group (`az deployment group validate`)
+5. Deploys each template using `az deployment group create`
 
 The loop-based approach means new detections are automatically picked up without modifying the pipeline — drop a `.json` file in `/detections` and it deploys on the next run.
 
@@ -64,19 +65,21 @@ The loop-based approach means new detections are automatically picked up without
 Provisions a Log Analytics Workspace and onboards Microsoft Sentinel on top of it, using a Bicep template and a per-client parameter file.
 
 **Steps:**
-1. Checks out the repository
-2. Authenticates to Azure
-3. Deploys the Bicep template with the client-specific parameter file (e.g. `client-a.bicepparam`)
+1. Asks user to choose a client/environment
+2. Checks out the repository
+3. Authenticates to Azure
+4. Deploys the Bicep template with the client-specific parameter file (e.g. `client-a.bicepparam`)
 
 ### `deploy-policy.yml` — Deploy Azure Policy
 
 Iterates over every `.json` file in `/infrastructure/Azure-Policy-as-Code/` and deploys each one as a subscription-scoped Azure Policy definition.
 
 **Steps:**
-1. Checks out the repository
-2. Authenticates to Azure
-3. Validates each ARM template at subscription scope (`az deployment sub validate`)
-4. Deploys each template using `az deployment sub create`
+1. Asks user to choose a client/environment
+2. Checks out the repository
+3. Authenticates to Azure
+4. Validates each ARM template at subscription scope (`az deployment sub validate`)
+5. Deploys each template using `az deployment sub create`
 
 ---
 
