@@ -51,7 +51,7 @@ resource sentinel 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' 
 }
 
 // Below is linking Sentinel to the Log Analytics Workspace.
-resource sentinelOnboarding 'Microsoft.SecurityInsights/onboardingStates@2024-03-01' = {
+resource sentinelOnboarding 'Microsoft.SecurityInsights/onboardingStates@2025-09-01' = {
   name: 'default'
   scope: law
   properties: {}
