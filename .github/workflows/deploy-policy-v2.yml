@@ -1,0 +1,32 @@
+name: Deploy Azure Policy
+on: 
+    workflow_dispatch:
+        inputs:
+            client:
+                description: 'Client to deploy to (must match GitHub Environment name)'
+                required: true
+                type: string
+
+jobs:
+    deploy:
+      runs-on: ubuntu-latest
+      environment: ${{ inputs.client }}
+      steps:
+          - name: Checkout Repo
+            uses: actions/checkout@v4
+
+          - name: Login to Azure
+            uses: azure/login@v3
+            with:
+                creds: ${{ secrets.AZURE_SP_CREDENTIALS }}
+
+          - name: Deploy Policy
+            if: github.event_name == 'workflow_dispatch'
+            run: |
+              for file in infrastructure/Azure-Policy-as-Code/*.json; do
+                echo "Deploying $file"
+                az deployment sub create \
+                --location ${{ vars.AZURE_LOCATION }} \
+                --template-file "$file" \
+                --subscription ${{ vars.AZURE_SUBSCRIPTION_ID }}
+              done
