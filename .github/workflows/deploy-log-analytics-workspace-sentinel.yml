@@ -29,5 +29,5 @@ jobs:
                 echo "Deploying $file"
                 az deployment group create \
                 --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-                --template-file "$file" 
+                --template-file "$file"
               done
