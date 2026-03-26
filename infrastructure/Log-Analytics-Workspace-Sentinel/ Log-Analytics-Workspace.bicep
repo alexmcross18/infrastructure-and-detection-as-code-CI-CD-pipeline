@@ -24,7 +24,7 @@ param retentionDays int
 param SKU string
 
 // Below is creating a Log Analytics Workspace.
-resource law 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
+resource law 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: logAnalyticsWorkspaceName                                       // Name of the Log Analytics Workspace.
   location: location                                  // Location/Region of the Log Analytics Workspace.
   sku: {
@@ -42,7 +42,7 @@ resource sentinel 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' 
   properties: {
     workspaceResourceId: law.id                       // ID of the Log Analytics Workspace it will pull logs from.
   }
-    plan: {
+  plan: {
     name: 'SecurityInsights(${law.name})'
     publisher: 'Microsoft'
     product: 'OMSGallery/SecurityInsights'
