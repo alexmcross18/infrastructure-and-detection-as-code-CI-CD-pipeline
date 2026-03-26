@@ -25,6 +25,6 @@ jobs:
       - name: Deploy Logs
         run: |
           az deployment tenant create \
-          --template-file infrastructure/logs/Entra-ID-Logs.bicep \
-          --location ${{ vars.AZURE_LOCATION }} \
-          --parameters lawResourceId=${{ vars.LAW_RESOURCE_ID }}
+            --template-file infrastructure/logs/Entra-ID-Logs.bicep \
+            --location ${{ vars.AZURE_LOCATION }} \
+            --parameters lawResourceId=${{ vars.LAW_RESOURCE_ID }}
