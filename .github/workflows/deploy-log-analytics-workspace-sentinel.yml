@@ -6,7 +6,7 @@ on:
         branches:
             - main
         paths:
-            - 'infrastructure/Log-Analytics-Workspace-Sentinel/**.json'
+            - 'infrastructure/Log-Analytics-Workspace-Sentinel/**.bicep'
 
 jobs:
     deploy:
@@ -25,7 +25,7 @@ jobs:
           - name: Deploy LAW
             if: github.event_name == 'workflow_dispatch'
             run: |
-              for file in infrastructure/Log-Analytics-Workspace-Sentinel/*.json; do
+              for file in infrastructure/Log-Analytics-Workspace-Sentinel/*.bicep; do
                 echo "Deploying $file"
                 az deployment group create \
                 --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
