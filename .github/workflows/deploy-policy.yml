@@ -20,6 +20,16 @@ jobs:
             with:
                 creds: ${{ secrets.AZURE_SP_CREDENTIALS }}
 
+          - name: Validate template
+            run: |
+              for file in infrastructure/Azure-Policy-as-Code/*.json; do
+                echo "Validating $file"
+                az deployment sub validate \
+                --location ${{ vars.AZURE_LOCATION }} \
+                --template-file "$file" \
+                --subscription ${{ vars.AZURE_SUBSCRIPTION_ID }}
+              done
+          
           - name: Deploy Policy
             if: github.event_name == 'workflow_dispatch'
             run: |
