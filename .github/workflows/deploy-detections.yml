@@ -11,6 +11,9 @@ jobs:
     deploy:
       runs-on: ubuntu-latest
       environment: ${{ inputs.client }}
+      permissions:
+        id-token: write
+        contents: read
       steps:
           - name: Checkout Repo
             uses: actions/checkout@v4
@@ -18,8 +21,10 @@ jobs:
           - name: Login to Azure
             uses: azure/login@v3
             with:
-                creds: ${{ secrets.AZURE_SP_CREDENTIALS }}
-
+              client-id: ${{ vars.AZURE_CLIENT_ID }}
+              tenant-id: ${{ vars.AZURE_TENANT_ID }}
+              subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+              
           - name: Validate template
             run: |
                 for file in detections/*.json; do
