@@ -19,8 +19,8 @@
                 "severity": "Medium",
                 "enabled": true,
                 "query": "// Creates a list of browsers you want to be alerted on.\r\nlet browsers = dynamic([\"browser1.exe\", \"browser2.exe\", \"browser3.exe\"]);\r\n// Looks for a browser being opened in the DeviceProcessEvents table.\r\nlet BrowserProcessEvents = DeviceProcessEvents\r\n| where FileName has_any (browsers)\r\n    or ProcessCommandLine has_any (browsers)\r\n| extend DetectionSource = \"DeviceProcessEvents\"\r\n| project TimeGenerated, DeviceName, AccountName, DetectionSource, FileName, ProcessCommandLine, FolderPath, SHA256, InitiatingProcessFileName, InitiatingProcessCommandLine;\r\n// Looks for a browser being opened in the DeviceEvents table.\r\nlet BrowserDeviceEvents = DeviceEvents\r\n| where FileName has_any (browsers)\r\n    or ProcessCommandLine has_any (browsers)\r\n| extend DetectionSource = \"DeviceEvents\"\r\n| project TimeGenerated, DeviceName, AccountName, DetectionSource, FileName, ProcessCommandLine, FolderPath, SHA256, InitiatingProcessFileName, InitiatingProcessCommandLine;\r\n// Looks for a browser being opened in the DeviceNetworkEvents table.\r\nlet BrowserNetworkEvents = DeviceNetworkEvents\r\n| where InitiatingProcessFileName has_any (browsers)\r\n| extend DetectionSource = \"DeviceNetworkEvents\"\r\n| project TimeGenerated, DeviceName, DetectionSource, InitiatingProcessAccountName, InitiatingProcessFileName, InitiatingProcessCommandLine;\r\n// Summarizes the results.\r\nBrowserProcessEvents\r\n| union BrowserDeviceEvents\r\n| union BrowserNetworkEvents\r\n| summarize \r\n    FirstSeen = min(TimeGenerated),\r\n    LastSeen = max(TimeGenerated),\r\n    EventCount = count()\r\n    by DeviceName, AccountName, FileName, SHA256, InitiatingProcessFileName\r\n| sort by LastSeen desc",
-                "queryFrequency": "PT5M",
-                "queryPeriod": "PT6M",
+                "queryFrequency": "PT1H",
+                "queryPeriod": "PT4H",
                 "triggerOperator": "GreaterThan",
                 "triggerThreshold": 0,
                 "suppressionDuration": "PT5H",
@@ -35,11 +35,13 @@
                 "incidentConfiguration": {
                     "createIncident": true,
                     "groupingConfiguration": {
-                        "enabled": false,
+                        "enabled": true,
                         "reopenClosedIncident": false,
-                        "lookbackDuration": "PT5H",
-                        "matchingMethod": "AllEntities",
-                        "groupByEntities": [],
+                        "lookbackDuration": "PT4H",
+                        "matchingMethod": "Selected",
+                        "groupByEntities": [
+                            "Host"
+                        ],
                         "groupByAlertDetails": [],
                         "groupByCustomDetails": []
                     }
