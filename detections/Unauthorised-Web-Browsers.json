@@ -8,8 +8,8 @@
     },
     "resources": [
         {
-            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/a8c72988-78e9-5347-958e-dfc39a5fa1b4')]",
-            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/a8c72988-78e9-5347-958e-dfc39a5fa1b4')]",
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/',guid(parameters('workspace'), 'Unauthorised-Web-Browsers-v2'))]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/',guid(parameters('workspace'), 'Unauthorised-Web-Browsers-v2'))]",
             "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
             "kind": "Scheduled",
             "apiVersion": "2023-12-01-preview",
@@ -26,9 +26,7 @@
                 "suppressionDuration": "PT5H",
                 "suppressionEnabled": false,
                 "startTimeUtc": null,
-                "tactics": [
-                    "DefenseEvasion"
-                ],
+                "tactics": [],
                 "techniques": [],
                 "subTechniques": [],
                 "alertRuleTemplateName": null,
