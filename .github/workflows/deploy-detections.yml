@@ -15,8 +15,8 @@ jobs:
     deploy:
       # Use a GitHub-hosted Ubuntu VM.
       runs-on: ubuntu-latest
-       # Pins this job to the GitHub Environment matching the client input above.
-       # This is what causes GitHub to load that environment's variables (AZURE_CLIENT_ID etc.)
+      # Pins this job to the GitHub Environment matching the client input above.
+      # This is what causes GitHub to load that environment's variables (AZURE_CLIENT_ID etc.)
       environment: ${{ inputs.client }}
       permissions:
         # id-token: write is required for OIDC authentication.
