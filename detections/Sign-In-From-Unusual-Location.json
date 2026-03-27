@@ -38,8 +38,8 @@
                     "createIncident": true,
                     "groupingConfiguration": {
                         "enabled": true,
-                        "reopenClosedIncident": false,
-                        "lookbackDuration": "PT4H",
+                        "reopenClosedIncident": true,
+                        "lookbackDuration": "PT8H",
                         "matchingMethod": "Selected",
                         "groupByEntities": [
                             "Account"
