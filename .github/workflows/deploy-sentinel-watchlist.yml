@@ -32,7 +32,20 @@ jobs:
 
           - name: Deploy Watchlist
             run: |
-              az deployment group create \
+              echo "=== CSV CONTENT ==="
+              cat watchlists/known_signin_locations.csv
+              echo "=== END CSV ==="  
+
+          - name: Deploy Watchlist
+            run: |
+              az sentinel watchlist create \
                 --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-                --template-file watchlists/knownLocations.bicep \
-                --parameters workspaceName=${{ vars.AZURE_WORKSPACE }}
+                --workspace-name ${{ vars.AZURE_WORKSPACE_NAME }} \
+                --watchlist-alias knownLocations \
+                --display-name "Known Locations" \
+                --items-search-key CountryCode \
+                --provider Microsoft \
+                --source "known_signin_locations.csv" \
+                --raw-content @watchlists/known_signin_locations.csv \
+                --content-type "text/csv" \
+                --number-of-lines-to-skip 0
