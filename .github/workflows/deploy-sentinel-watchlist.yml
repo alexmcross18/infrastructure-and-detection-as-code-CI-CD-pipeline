@@ -38,6 +38,13 @@ jobs:
               tenant-id: ${{ vars.AZURE_TENANT_ID }}
               subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
+          - name: Read CSV and Deploy Watchlist
+            run: |
+                # Confirm the exact file contents being deployed
+                echo "=== BICEP FILE CONTENTS ==="
+                cat watchlists/knownLocations.bicep
+                echo "=== END BICEP FILE ==="
+
           # Deploys the Log Analytics Workspace and Sentinel instance.
           - name: Deploy Watchlist
             run: |
