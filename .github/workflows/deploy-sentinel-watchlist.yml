@@ -49,6 +49,12 @@ jobs:
                 --items-search-key CountryCode \
                 --provider Microsoft \
                 --source "known_signin_locations.csv" \
+                --raw-content @watchlists/known_signin_locations.csv \
+                --content-type "text/csv" \
+                --skip-num 0 \
+                --watchlist-id $(cat /proc/sys/kernel/random/uuid) \
+                --upload-status "Complete"
+                --source "known_signin_locations.csv" \
                 --source-type "Local file" \
                 --raw-content @watchlists/known_signin_locations.csv \
                 --content-type "text/csv" \
