@@ -1,7 +1,7 @@
 resource knownLocations 'Microsoft.SecurityInsights/watchlists@2025-09-01' = {
   name: knownLocations
   properties: {
-    displayName: knownLocationsv2
+    displayName: knownLocations
     itemsSearchKey: CountryCode
     provider: Microsoft
   }
