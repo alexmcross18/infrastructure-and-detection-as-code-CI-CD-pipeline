@@ -34,17 +34,11 @@ jobs:
             run: |
               echo "=== CSV CONTENT ==="
               cat watchlists/known_signin_locations.csv
-              echo "=== END CSV ==="  
-
-          - name: Check Sentinel Watchlist Commands
-            run: az sentinel watchlist create --help    
+              echo "=== END CSV ==="     
 
           - name: Deploy Watchlist
             run: |
-              echo "=== RAW CONTENT BEING SENT ==="
-              cat watchlists/known_signin_locations.csv
-              echo "=== END ==="
-
+              RAW=$(cat watchlists/known_signin_locations.csv)
               az sentinel watchlist create \
                 --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
                 --workspace-name ${{ vars.AZURE_WORKSPACE }} \
@@ -53,8 +47,8 @@ jobs:
                 --items-search-key CountryCode \
                 --provider Microsoft \
                 --source "known_signin_locations.csv" \
-                --raw-content "$(cat watchlists/known_signin_locations.csv)" \
+                --raw-content "$RAW" \
                 --content-type "text/csv" \
                 --skip-num 0 \
                 --watchlist-id $(cat /proc/sys/kernel/random/uuid) \
-                --upload-status "Complete
+                --upload-status "Complete"
