@@ -36,6 +36,9 @@ jobs:
               cat watchlists/known_signin_locations.csv
               echo "=== END CSV ==="  
 
+          - name: Check Sentinel Watchlist Commands
+            run: az sentinel watchlist create --help    
+
           - name: Deploy Watchlist
             run: |
               az sentinel watchlist create \
@@ -47,5 +50,4 @@ jobs:
                 --provider Microsoft \
                 --source "known_signin_locations.csv" \
                 --raw-content @watchlists/known_signin_locations.csv \
-                --content-type "text/csv" \
-                --number-of-lines-to-skip 0
+                --content-type "text/csv"
