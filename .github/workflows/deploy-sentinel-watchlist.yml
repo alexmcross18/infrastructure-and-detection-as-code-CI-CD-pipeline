@@ -39,7 +39,7 @@ jobs:
               subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
           # Deploys the Log Analytics Workspace and Sentinel instance.
-          - name: Deploy LAW
+          - name: Deploy Watchlist
             run: |
               az deployment group create \
               --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
