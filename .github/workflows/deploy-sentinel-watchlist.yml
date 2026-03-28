@@ -34,7 +34,7 @@ jobs:
             run: |
               az sentinel watchlist create \
                 --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-                --workspace-name ${{ vars.AZURE_WORKSPACE_NAME }} \
+                --workspace-name ${{ vars.AZURE_WORKSPACE }} \
                 --watchlist-alias knownLocations \
                 --display-name "Known Locations" \
                 --items-search-key CountryCode \
