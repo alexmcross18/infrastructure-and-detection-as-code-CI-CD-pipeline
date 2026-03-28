@@ -47,4 +47,5 @@ jobs:
               --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
               --template-file watchlists/knownLocations.bicep \
               --parameters watchlistAlias='knownLocations' \
-                  csvContent="$CSV_CONTENT"
+                           workspaceName=${{ vars.AZURE_WORKSPACE_NAME }} \
+                           csvContent="$CSV_CONTENT"
