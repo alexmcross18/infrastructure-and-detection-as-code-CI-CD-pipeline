@@ -38,9 +38,11 @@ jobs:
               tenant-id: ${{ vars.AZURE_TENANT_ID }}
               subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
-          # Install the Sentinel extension.
+          # Install the relevant extensions.
           - name: Install Azure Sentinel CLI Extension
-            run: az extension add --name sentinel
+            run: |
+              az extension add --name sentinel
+              az extension add --name watchlist
 
           # Deploys the Log Analytics Workspace and Sentinel instance.
           - name: Deploy Watchlist
