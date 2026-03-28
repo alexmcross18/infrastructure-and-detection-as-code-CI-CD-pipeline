@@ -8,6 +8,7 @@ resource workspace 'Microsoft.OperationalInsights/workspaces@2023-02-01' existin
 
 resource knownLocations 'Microsoft.SecurityInsights/watchlists@2023-09-01-preview' = {
   name: watchlistAlias
+  parent: workspace
   properties: {
     displayName: 'Known Locations'
     itemsSearchKey: 'CountryCode'
