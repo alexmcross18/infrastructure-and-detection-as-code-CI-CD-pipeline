@@ -43,4 +43,4 @@ jobs:
             run: |
               az deployment group create \
               --resource-group ${{ vars.AZURE_RESOURCE_GROUP }} \
-              --template-file infrastructure/bicep/Watchlist/knownLocations.bicep \
+              --template-file watchlists/knownLocations.bicep
