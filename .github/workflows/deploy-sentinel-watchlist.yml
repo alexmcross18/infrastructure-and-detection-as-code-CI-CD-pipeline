@@ -1,44 +1,35 @@
 name: Deploy Watchlist to Sentinel
 
-# workflow_dispatch means this pipeline only runs when manually triggered via the GitHub Actions UI.
 on: 
     workflow_dispatch:
         inputs:
             client:
-                # The value entered here must exactly match a GitHub Environment name (e.g. "client-a").
-                # GitHub uses this to load the correct set of secrets and variables for that client's tenant.
                 description: 'Client to deploy to (must match GitHub Environment name)'
                 required: true
                 type: string
 
 jobs:
     deploy:
-      # Use a GitHub-hosted Ubuntu VM.
       runs-on: ubuntu-latest
-      # Pins this job to the GitHub Environment matching the client input above.
-      # This is what causes GitHub to load that environment's variables (AZURE_CLIENT_ID etc.)
       environment: ${{ inputs.client }}
       permissions:
-          # id-token: write is required for OIDC authentication.
-          # It tells GitHub to create a short-lived identity token for this job so Azure can
-          # verify who we are without needing a stored client secret.
           id-token: write
           contents: read
+
       steps:
-          # Checks out/downloads the repository onto the VM.
           - name: Checkout Repo
-            uses: actions/checkout@v5
-            
-          # Authenticates to Azure using OIDC (no stored credentials).
-          # The three values here are non-sensitive identifiers pulled from environment variables.  
+            uses: actions/checkout@v4
+
           - name: Login to Azure
-            uses: azure/login@v3
+            uses: azure/login@v2
             with:
               client-id: ${{ vars.AZURE_CLIENT_ID }}
               tenant-id: ${{ vars.AZURE_TENANT_ID }}
               subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
-          # Deploys the Log Analytics Workspace and Sentinel instance.
+          - name: Install Sentinel Extension
+            run: az extension add --name sentinel --allow-preview true
+
           - name: Deploy Watchlist
             run: |
               az sentinel watchlist create \
