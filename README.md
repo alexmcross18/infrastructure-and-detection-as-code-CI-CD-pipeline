@@ -1,6 +1,6 @@
 # Infrastructure & Detection as Code | CI/CD Pipeline
 
-> A multi-environment Azure security pipeline built by a SOC analyst — automating the deployment of Microsoft Sentinel detection rules, Log Analytics Workspaces, and cloud security policy using GitHub Actions, ARM templates, and Bicep.
+> A multi-environment Azure security pipeline built by a SOC analyst — automating the deployment of Microsoft Sentinel detection rules, Log Analytics Workspaces, Entra ID diagnostic settings, and cloud security policy using GitHub Actions, ARM templates, and Bicep.
 
 ---
 
@@ -18,9 +18,10 @@ This approach brings software engineering discipline to security operations — 
 .
 ├── .github/
 │   └── workflows/
-│       ├── deploy-detections.yml                        # Pipeline: deploy Sentinel analytics rules
+│       ├── deploy-detections.yml                        # Pipeline: validate and deploy Sentinel analytics rules
 │       ├── deploy-log-analytics-workspace-sentinel.yml  # Pipeline: deploy LAW + onboard Sentinel
-│       └── deploy-policy.yml                            # Pipeline: deploy Azure Policy definitions
+│       ├── deploy-policy.yml                            # Pipeline: validate and deploy Azure Policy definitions
+│       └── deploy-entra-id-logs.yml                     # Pipeline: deploy Entra ID diagnostic settings
 │
 ├── detections/
 │   ├── Bunny-Loader-Malware.json                        # ARM: registry persistence detection
@@ -34,52 +35,94 @@ This approach brings software engineering discipline to security operations — 
     │   ├── Deny-Storage-Public-Blob-Access.json          # ARM: policy to block public blob access
     │   └── policy.md                                     # Annotated walkthrough of the policy template
     │
-    └── Log-Analytics-Workspace-Sentinel/
-        ├── Log-Analytics-Workspace.bicep                 # Bicep: provisions LAW and onboards Sentinel
-        └── parameters/
-            ├── client-a.bicepparam                       # Params: Client A workspace config
-            └── client-b.bicepparam                       # Params: Client B workspace config
+    ├── Log-Analytics-Workspace-Sentinel/
+    │   ├── Log-Analytics-Workspace.bicep                 # Bicep: provisions LAW and onboards Sentinel
+    │   └── parameters/
+    │       ├── client-a.bicepparam                       # Params: Client A workspace config
+    │       └── client-b.bicepparam                       # Params: Client B workspace config
+    │
+    └── Logs/
+        └── Entra-ID-Logs.bicep                           # Bicep: configures Entra ID diagnostic settings
 ```
+
+---
+
+## Authentication — OIDC (No Stored Credentials)
+
+All four pipelines authenticate to Azure using **OpenID Connect (OIDC)** via the `azure/login` action. No client secrets or service principal credentials are stored anywhere in the repository or in GitHub Secrets.
+
+Each job requests a short-lived identity token from GitHub at runtime:
+
+```yaml
+permissions:
+  id-token: write   # Required for OIDC — tells GitHub to mint a token for this job
+  contents: read
+```
+
+Azure verifies the token against a federated credential configured on the App Registration, confirming the request is genuinely coming from this repository and environment before granting access. The token expires when the job ends.
+
+The three values used in the login step are non-sensitive identifiers — not secrets — and are stored as GitHub Environment variables:
+
+```yaml
+- name: Login to Azure
+  uses: azure/login@v3
+  with:
+    client-id: ${{ vars.AZURE_CLIENT_ID }}
+    tenant-id: ${{ vars.AZURE_TENANT_ID }}
+    subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+```
+
+This means there are no stored credentials that can be leaked, rotated, or expire unexpectedly.
 
 ---
 
 ## GitHub Actions Workflows
 
-All three workflows are triggered manually via `workflow_dispatch` and accept a `client` input that maps to a GitHub Environment. Each environment holds its own secrets and variables (Azure credentials, resource group name, workspace name, etc.), which allows the same workflow to deploy to multiple tenants without code changes, perfect for a multi-client operation.
+All four workflows are triggered manually via `workflow_dispatch` and accept a `client` input that maps to a GitHub Environment. Each environment holds its own variables (Azure identifiers, resource group name, workspace name, etc.), which allows the same workflow to deploy to multiple tenants without code changes.
 
 ### `deploy-detections.yml` — Deploy Sentinel Analytics Rules
 
-Iterates over every `.json` file in the `/detections` folder and deploys each one as a Sentinel Scheduled Analytics Rule into the target workspace.
+Validates then deploys every `.json` file in `/detections` as a Sentinel Scheduled Analytics Rule into the target workspace.
 
 **Steps:**
-1. Asks user to choose a client/environment
+1. Accepts a `client` input matching a GitHub Environment name
 2. Checks out the repository
-3. Authenticates to Azure using a Service Principal stored in `AZURE_SP_CREDENTIALS`
-4. Validates each ARM template against the target resource group (`az deployment group validate`)
-5. Deploys each template using `az deployment group create`
+3. Authenticates to Azure using OIDC
+4. **Validates** each ARM template against the target resource group (`az deployment group validate`) — if any file fails, the pipeline stops and nothing is deployed
+5. **Deploys** each validated template using `az deployment group create`
 
-The loop-based approach means new detections are automatically picked up without modifying the pipeline — drop a `.json` file in `/detections` and it deploys on the next run.
+The validate-before-deploy pattern means schema errors and permission issues are caught before any changes reach the environment. The loop-based approach means new detections are automatically picked up without modifying the pipeline — drop a `.json` file into `/detections` and it deploys on the next run.
 
 ### `deploy-log-analytics-workspace-sentinel.yml` — Deploy LAW + Sentinel
 
 Provisions a Log Analytics Workspace and onboards Microsoft Sentinel on top of it, using a Bicep template and a per-client parameter file.
 
 **Steps:**
-1. Asks user to choose a client/environment
+1. Accepts a `client` input matching a GitHub Environment name
 2. Checks out the repository
-3. Authenticates to Azure
+3. Authenticates to Azure using OIDC
 4. Deploys the Bicep template with the client-specific parameter file (e.g. `client-a.bicepparam`)
 
 ### `deploy-policy.yml` — Deploy Azure Policy
 
-Iterates over every `.json` file in `/infrastructure/Azure-Policy-as-Code/` and deploys each one as a subscription-scoped Azure Policy definition.
+Validates then deploys every `.json` file in `/infrastructure/Azure-Policy-as-Code/` as a subscription-scoped Azure Policy definition.
 
 **Steps:**
-1. Asks user to choose a client/environment
+1. Accepts a `client` input matching a GitHub Environment name
 2. Checks out the repository
-3. Authenticates to Azure
-4. Validates each ARM template at subscription scope (`az deployment sub validate`)
-5. Deploys each template using `az deployment sub create`
+3. Authenticates to Azure using OIDC
+4. **Validates** each ARM template at subscription scope (`az deployment sub validate`) — if any file fails, the pipeline stops
+5. **Deploys** each validated template using `az deployment sub create`
+
+### `deploy-entra-id-logs.yml` — Deploy Entra ID Diagnostic Settings
+
+Deploys the Entra ID diagnostic settings Bicep template at tenant scope, routing log categories into the target Log Analytics Workspace.
+
+**Steps:**
+1. Accepts a `client` input matching a GitHub Environment name
+2. Checks out the repository
+3. Authenticates to Azure using OIDC with `allow-no-subscriptions: true` (required for tenant-scoped deployments)
+4. Deploys the Bicep template at tenant scope using `az deployment tenant create`
 
 ---
 
@@ -89,7 +132,7 @@ Each detection is an ARM template that deploys a Scheduled Analytics Rule into M
 
 ### Bunny Loader Malware (`Bunny-Loader-Malware.json`)
 
-**MITRE:** Persistence — T1037.001 (Boot or Logon Initialization Scripts: Logon Scripts)
+**MITRE:** Persistence — T1547.001 (Boot or Logon Autostart: Registry Run Keys)
 
 Targets the `DeviceRegistryEvents` table to detect processes writing to Windows Run/RunOnce registry keys where the value points to a suspicious execution path — `AppData`, `Temp`, `ProgramData`, or common LOLBin interpreters (`powershell`, `cmd.exe`, `wscript`, `mshta`). This pattern is consistent with how Bunny Loader establishes persistence on a host.
 
@@ -113,7 +156,7 @@ Builds a dynamic lookup of each user's last known successful sign-in country fro
 
 ### Unauthorised Web Browsers (`Unauthorised-Web-Browsers.json`)
 
-**MITRE:** Defense Evasion
+**MITRE:** Defense Evasion — T1564
 
 Detects the execution of browsers not approved by your organisation across three MDE tables — `DeviceProcessEvents`, `DeviceEvents`, and `DeviceNetworkEvents` — then unions the results and summarises by device and account with first/last seen timestamps and an event count. Dual-table process coverage reduces evasion via unusual launch paths.
 
@@ -134,12 +177,14 @@ A Bicep template that creates a Log Analytics Workspace and immediately onboards
 | `retentionDays` | Log retention period (30–730 days) |
 | `SKU` | Pricing tier (`PerGB2018`, `Free`, `CapacityReservation`, etc.) |
 
-**Per-client parameter files** in `/parameters/` allow the same Bicep template to deploy differently per client without any code changes:
+Per-client parameter files in `/parameters/` allow the same Bicep template to deploy differently per client without any code changes:
 
 - `client-a.bicepparam` — 90-day retention, PerGB2018 tier
 - `client-b.bicepparam` — 90-day retention, Free tier
 
-Outputs the workspace ID and name to the deployment log for downstream reference.
+### Entra ID Diagnostic Settings (`Entra-ID-Logs.bicep`)
+
+A Bicep template deployed at tenant scope that routes Entra ID log categories into the target Log Analytics Workspace. Requires `allow-no-subscriptions: true` on the OIDC login step since the deployment operates above subscription level.
 
 ### Azure Policy — Deny Public Blob Access (`Deny-Storage-Public-Blob-Access.json`)
 
@@ -153,20 +198,28 @@ The `policyEffect` parameter is configurable at deployment time — `Audit` in n
 
 ## Multi-Client Architecture
 
-GitHub Environments are used to scope secrets and variables per client. When a workflow is triggered, the `client` input selects the target environment, and all subsequent steps pull credentials and configuration from that environment's context. No credentials or environment-specific values are hardcoded anywhere in the repository.
+GitHub Environments are used to scope variables per client. When a workflow is triggered, the `client` input selects the target environment, and all subsequent steps pull configuration from that environment's context. No credentials or environment-specific values are hardcoded anywhere in the repository.
 
 ```
 GitHub Repository
 ├── Environment: client-a
-│   ├── Secret: AZURE_SP_CREDENTIALS  → Service Principal for Client A's tenant
+│   ├── Var: AZURE_CLIENT_ID          → App Registration client ID for Client A
+│   ├── Var: AZURE_TENANT_ID          → Client A's Entra ID tenant ID
+│   ├── Var: AZURE_SUBSCRIPTION_ID    → Client A's subscription ID
 │   ├── Var: AZURE_RESOURCE_GROUP     → Client A's resource group
-│   └── Var: AZURE_WORKSPACE          → Client A's Sentinel workspace name
+│   ├── Var: AZURE_WORKSPACE          → Client A's Sentinel workspace name
+│   └── Var: AZURE_LOCATION           → Client A's Azure region
 │
 └── Environment: client-b
-    ├── Secret: AZURE_SP_CREDENTIALS  → Service Principal for Client B's tenant
+    ├── Var: AZURE_CLIENT_ID          → App Registration client ID for Client B
+    ├── Var: AZURE_TENANT_ID          → Client B's Entra ID tenant ID
+    ├── Var: AZURE_SUBSCRIPTION_ID    → Client B's subscription ID
     ├── Var: AZURE_RESOURCE_GROUP     → Client B's resource group
-    └── Var: AZURE_WORKSPACE          → Client B's Sentinel workspace name
+    ├── Var: AZURE_WORKSPACE          → Client B's Sentinel workspace name
+    └── Var: AZURE_LOCATION           → Client B's Azure region
 ```
+
+None of these are secrets — they are non-sensitive identifiers. There are no stored passwords, client secrets, or credentials anywhere in this repository.
 
 ---
 
@@ -175,16 +228,21 @@ GitHub Repository
 | Technology | Role |
 |---|---|
 | GitHub Actions | Pipeline orchestration and environment management |
-| Azure Bicep | Infrastructure as Code (Log Analytics Workspace + Sentinel) |
+| Azure Bicep | Infrastructure as Code (Log Analytics Workspace, Sentinel, Entra ID logs) |
 | ARM Templates | Detection as Code (Sentinel analytics rules) and Policy as Code |
 | Microsoft Sentinel | Target SIEM — analytics rules deployed here |
 | Azure Policy | Preventive cloud security control at subscription scope |
 | Azure CLI (`az`) | Deployment engine called within pipeline steps |
 | KQL | Query language powering all detection logic |
+| OIDC | Credential-free authentication — no stored secrets anywhere |
 
 ---
 
 ## Design Decisions & Lessons Learned
+
+**OIDC over Service Principal credentials**
+
+All pipelines authenticate using OpenID Connect rather than a stored client secret. GitHub mints a short-lived identity token per job run; Azure verifies it against a federated credential on the App Registration. There is no secret to store, rotate, or leak. This is the correct approach for any pipeline touching production security infrastructure.
 
 **Stable rule GUIDs via `guid()`**
 
@@ -192,7 +250,7 @@ Early deployments failed when attempting to redeploy a rule whose ID had been re
 
 **Validation before deployment**
 
-Both detection and policy pipelines run an explicit `validate` step before `create`. This catches ARM schema errors and permission issues before any changes are made to the target environment.
+The detection and policy pipelines both run an explicit `validate` step before `create`. This catches ARM schema errors and permission issues before any changes are made to the target environment. If validation fails, the deploy step never runs — the pipeline stops cleanly with the error surfaced in the logs.
 
 **Loop-based deployment**
 
@@ -201,6 +259,10 @@ Using `for file in detections/*.json` means the pipeline is self-maintaining —
 **Parameterised effect in policy definitions**
 
 Defaulting the `policyEffect` to `Audit` means deploying to an existing environment is always safe on first run — it will surface non-compliant resources without blocking anything. Switching to `Deny` is a deliberate, explicit step.
+
+**Tenant-scoped Entra ID log deployment**
+
+Configuring Entra ID diagnostic settings requires deploying at tenant scope rather than resource group or subscription scope. The OIDC login step uses `allow-no-subscriptions: true` to permit this, and the deployment uses `az deployment tenant create` rather than the resource group equivalent.
 
 ---
 
