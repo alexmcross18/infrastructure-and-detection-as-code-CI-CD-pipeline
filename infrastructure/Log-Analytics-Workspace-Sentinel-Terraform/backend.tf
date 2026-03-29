@@ -1,9 +1,9 @@
 terraform {
   backend "remote" {
-    organization = "your-org-name"
+    organization = "GitHub-LAW-SENTINEL"
 
     workspaces {
-      name = "law-sentinel"
+      name = "LAW-SENTINEL"
     }
   }
 }
